@@ -129,7 +129,7 @@ app.put('/youtubers/:id', (req, res) => {
     res.json(db.get(id));
 });
 
-// YouTube Channel URL convention
+// Get a YouTube channel
 app.get('/youtubers/:id', (req, res) => {
      const {id} = req.params;
      const user = db.get(parseInt(id));
@@ -144,6 +144,26 @@ app.get('/youtubers/:id', (req, res) => {
      }
     
      res.json(user);
+});
+
+// Delete a YouTube channel
+app.delete('/youtubers/:id', (req, res) => {
+    const {id} = req.params;
+    const user = db.get(parseInt(id));
+
+    // Check if the user exists
+    if (!user){
+        res.json({
+            error: 'No such channel!'
+        });
+        return;
+    }
+
+    // Delete the user
+    db.delete(parseInt(id));
+    res.json({
+        success: true
+    });
 });
 
 app.listen(8888, () => {
