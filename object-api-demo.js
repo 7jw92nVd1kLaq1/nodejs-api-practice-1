@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 
+let youtubersCount = 1;
+
 const db = new Map();
 const youtubers = {
     'pewdiepie': {
@@ -42,7 +44,6 @@ const youtubers = {
 };
 
 // convert object to map
-let youtubersCount = 1;
 Object.keys(youtubers).forEach(key => {
     db.set(youtubersCount++, youtubers[key]);
 });
@@ -78,15 +79,7 @@ app.post('/youtubers', (req, res) => {
         return;
     }
 
-    db.set(youtubersCount++, {
-        nickname,
-        subscribers,
-        views,
-        country,
-        joined,
-        videos,
-        category
-    });
+    db.set(youtubersCount++, req.body);
 
     res.json({
        success: true 
@@ -145,6 +138,23 @@ app.get('/youtubers/:id', (req, res) => {
     
      res.json(user);
 });
+
+// Delete all YouTube channels
+app.delete('/youtubers', (req, res) => {
+    if (db.size <= 0) {
+        res.json({
+            error: 'No channels to delete!'
+        });
+        return;
+    }
+
+    db.clear();
+    res.json({
+        success: true,
+        message: 'All channels have been deleted!'
+    });
+});
+
 
 // Delete a YouTube channel
 app.delete('/youtubers/:id', (req, res) => {
