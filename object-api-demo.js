@@ -109,18 +109,26 @@ app.put('/youtubers/:id', (req, res) => {
         category
     } = req.body;
 
-    // update the user if the field is provided
-    db.set(id, {
-        nickname: nickname || user.nickname,
-        subscribers: subscribers || user.subscribers,
-        views: views || user.views,
-        country: country || user.country,
-        joined: joined || user.joined,
-        videos: videos || user.videos,
-        category: category || user.category
-    });
+    if (
+        !nickname ||
+        !subscribers ||
+        !views ||
+        !country ||
+        !joined ||
+        !videos ||
+        !category
+    ){
+        res.json({
+            error: 'Please provide all the required fields! (nickname, subscribers, views, country, joined, videos, category)'
+        });
+        return;
+    }
 
-    res.json(db.get(id));
+    db.set(id, req.body);
+    res.json({
+        success: true,
+        message: `User ${id} has been updated!`
+    });
 });
 
 // Get a YouTube channel
