@@ -148,8 +148,9 @@ app.get('/youtubers/:id', (req, res) => {
 
 // Delete a YouTube channel
 app.delete('/youtubers/:id', (req, res) => {
-    const {id} = req.params;
-    const user = db.get(parseInt(id));
+    let {id} = req.params;
+    id = parseInt(id); 
+    const user = db.get(id);
 
     // Check if the user exists
     if (!user){
@@ -160,9 +161,10 @@ app.delete('/youtubers/:id', (req, res) => {
     }
 
     // Delete the user
-    db.delete(parseInt(id));
+    db.delete(id);
     res.json({
-        success: true
+        success: true,
+        message: `${user.nickname} has been deleted!`
     });
 });
 
