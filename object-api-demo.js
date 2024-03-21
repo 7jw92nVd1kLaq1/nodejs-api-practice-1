@@ -90,7 +90,7 @@ app.post('/youtubers', (req, res) => {
 app.put('/youtubers/:id', (req, res) => {
     let {id} = req.params;
     id = parseInt(id);
-    const user = db.get(d);
+    const user = db.get(id);
 
     if (!user){
         res.json({
@@ -100,6 +100,7 @@ app.put('/youtubers/:id', (req, res) => {
     }
 
     const {
+        nickname,
         subscribers,
         views,
         country,
