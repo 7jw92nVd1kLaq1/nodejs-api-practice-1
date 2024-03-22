@@ -53,10 +53,19 @@ app.use(express.json());
 // Get all YouTube channels
 app.get('/youtubers', (req, res) => {
     const youtubers = {};
-    db.forEach((value, key) => {
-        youtubers[key] = value;
+
+    // Check if there are any channels to show
+    if (db.size > 0){
+        db.forEach((value, key) => {
+            youtubers[key] = value;
+        });
+        res.json(youtubers);
+    }
+
+    // If there are no channels to show
+    res.status(404).json({
+        error: 'No channels to show!'
     });
-    res.json(youtubers);
 });
 
 // Create a new YouTube channel
@@ -73,15 +82,15 @@ app.post('/youtubers', (req, res) => {
 
     // Check if req.body is empty and provide all the required data fields
     if (!nickname || !subscribers || !views || !country || !joined || !videos || !category) {
-        res.json({
+        res.status(400).json({
             error: 'Please provide all the required fields! (nickname, subscribers, views, country, joined, videos, category)'
         });
         return;
     }
 
+    // add the new user to the database
     db.set(youtubersCount++, req.body);
-
-    res.json({
+    res.status(201).json({
        success: true 
     });
 });
@@ -92,42 +101,45 @@ app.put('/youtubers/:id', (req, res) => {
     id = parseInt(id);
     const user = db.get(id);
 
-    if (!user){
+    // Check if the user exists
+    if (user){
+        const {
+            nickname,
+            subscribers,
+            views,
+            country,
+            joined,
+            videos,
+            category
+        } = req.body;
+
+        // Check if req.body is empty and provide all the required data fields
+        if (
+            !nickname ||
+            !subscribers ||
+            !views ||
+            !country ||
+            !joined ||
+            !videos ||
+            !category
+        ){
+            res.status(400).json({
+                error: 'Please provide all the required fields! (nickname, subscribers, views, country, joined, videos, category)'
+            });
+            return;
+        }
+
+        // Update the user
+        db.set(id, req.body);
         res.json({
-            error: 'No such channel!'
+            success: true,
+            message: `User ${id} has been updated!`
         });
-        return;
+        return
     }
 
-    const {
-        nickname,
-        subscribers,
-        views,
-        country,
-        joined,
-        videos,
-        category
-    } = req.body;
-
-    if (
-        !nickname ||
-        !subscribers ||
-        !views ||
-        !country ||
-        !joined ||
-        !videos ||
-        !category
-    ){
-        res.json({
-            error: 'Please provide all the required fields! (nickname, subscribers, views, country, joined, videos, category)'
-        });
-        return;
-    }
-
-    db.set(id, req.body);
-    res.json({
-        success: true,
-        message: `User ${id} has been updated!`
+    res.status(404).json({
+        error: 'No such channel!'
     });
 });
 
@@ -138,29 +150,31 @@ app.get('/youtubers/:id', (req, res) => {
      const userDataObj = {};
 
      // Check if the user exists
-     if (!user){
-         res.json({
-             error: 'No such channel!'
-         });
+     if (user){
+         res.json(user);
          return;
      }
     
-     res.json(user);
+    res.status(404).json({
+        error: 'No such channel!'
+    });
 });
 
 // Delete all YouTube channels
 app.delete('/youtubers', (req, res) => {
-    if (db.size <= 0) {
+    // Check if there are any channels to delete
+    if (db.size > 0) {
+        // Clear the database
+        db.clear();
         res.json({
-            error: 'No channels to delete!'
+            success: true,
+            message: 'All channels have been deleted!'
         });
-        return;
     }
 
-    db.clear();
-    res.json({
-        success: true,
-        message: 'All channels have been deleted!'
+    // If there are no channels to delete
+    res.status(404).json({
+        error: 'No channels to delete!'
     });
 });
 
@@ -172,18 +186,16 @@ app.delete('/youtubers/:id', (req, res) => {
     const user = db.get(id);
 
     // Check if the user exists
-    if (!user){
+    if (user){
+        db.delete(id);
         res.json({
-            error: 'No such channel!'
+            success: true,
+            message: `${user.nickname} has been deleted!`
         });
-        return;
     }
 
-    // Delete the user
-    db.delete(id);
-    res.json({
-        success: true,
-        message: `${user.nickname} has been deleted!`
+    res.status(404).json({
+        error: 'No such channel!'
     });
 });
 
